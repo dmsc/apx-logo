@@ -1,6 +1,7 @@
 save_a          = $F7
 save_x          = $F8
 save_y          = $F9
+save_dl         = $FA
 RTCLOK          = $14
 
 
@@ -52,6 +53,7 @@ VDELAY          = $D01C                        ; vertical delay
 GRACTL          = $D01D                        ; graphic control
 HITCLR          = $D01E                        ; collision clear
 CONSOL          = $D01F                        ; console switches and speaker control
+SKSTAT          = $D20F
 PORTA           = $D300                        ; port A direction register or jacks one/two
 PORTB           = $D301                        ; port B direction register or memory management
 PACTL           = $D302                        ; port A control
@@ -75,9 +77,9 @@ STARTUP lda     RTCLOK
 L2C02   cmp     RTCLOK
         beq     L2C02
         sei
-        lda     #$00
-        sta     NMIEN
-        sta     DMACTL
+
+        ; store current display-list
+        mwa     SDLSTL  save_dl
 
         mwa     #DLI    VDSLST
         mwa     #DLIST  SDLSTL
@@ -90,8 +92,6 @@ SCLR    lda     COLORS, x
 
         lda     #$01
         sta     GPRIOR
-        lda     #$01
-        sta     VSCROL
         lda     #$3D
         sta     SDMCTL
 
@@ -99,24 +99,27 @@ SCLR    lda     COLORS, x
         sta     NMIEN
         cli
 
-L2C28   lda     TRIG0
-        beq     L2C40
-        lda     TRIG1
-        beq     L2C40
+SHOWLOOP
         lda     CONSOL
-        and     #$01
-        beq     L2C40
-        lda     $D20F
+        and     TRIG0
+        and     TRIG1
+        beq     EXIT
+        lda     SKSTAT
         and     #$04
-        bne     L2C28
-L2C40   lda     #$00
+        bne     SHOWLOOP
+
+EXIT
         sta     GRACTL
         tax
-L2C46   sta     HPOSP0,x
+CLRGTIA
+        sta     HPOSP0,x
         inx
-        bne     L2C46
+        bne     CLRGTIA
         lda     #$40
         sta     NMIEN
+
+        ; Restore original display list
+        mwa     save_dl SDLSTL
         rts
 
 DLIST   .byte   $70,$70,$70,$70,$60,$4F
@@ -127,7 +130,7 @@ DLIST   .byte   $70,$70,$70,$70,$60,$4F
         .byte   $D0
         .byte   15, 15
         :29     dta $4F, a(REPLINE), $0F
-        dta $4F, a(REPLINE)
+        dta     $4F, a(REPLINE)
         .byte   $41
         .word   DLIST
 
@@ -137,22 +140,17 @@ SCREEN
 REPLINE
         ins     'scr8.bin',+3936,64
 
-
-DLI     sta     save_a
-        stx     save_x
-        sty     save_y
+DLI     pha
         lda     #$81
-        ldx     #$46
-        ldy     #$72
         sta     WSYNC
         sta     PRIOR
+        lda     #$46
+        sta     COLPF2
         lda     #$3A
         sta     COLPF1
-        stx     COLPF2
-        sty     COLBK
-        lda     save_a
-        ldx     save_x
-        ldy     save_y
+        lda     #$72
+        sta     COLBK
+        pla
         rti
 
 COLORS
