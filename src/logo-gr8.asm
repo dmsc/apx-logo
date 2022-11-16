@@ -24,51 +24,25 @@ COLOR4  = $02C8         ;1-byte background color/luminance
 CHACT   = $02F3         ;CHACTL REGISTER RAM
 CHBAS   = $02F4         ;CHBAS REGISTER RAM
 
-HPOSP0          = $D000                        ; player 0 horizontal position
-HPOSP1          = $D001                        ; player 1 horizontal position
-HPOSP2          = $D002                        ; player 2 horizontal position
-HPOSP3          = $D003                        ; player 3 horizontal position
-HPOSM0          = $D004                        ; missile 0 horizontal position
-HPOSM1          = $D005                        ; missile 1 horizontal position
-HPOSM2          = $D006                        ; missile 2 horizontal position
-HPOSM3          = $D007                        ; missile 3 horizontal position
-SIZEP0          = $D008                        ; player 0 size
-SIZEP1          = $D009                        ; player 1 size
-SIZEP2          = $D00A                        ; player 2 size
-SIZEP3          = $D00B                        ; player 3 size
-SIZEM           = $D00C                        ; missile sizes
-TRIG0           = $D010                        ; joystick trigger 0
-TRIG1           = $D011                        ; joystick trigger 1
-COLPM0          = $D012                        ; player-missile 0 color/luminance
-COLPM1          = $D013                        ; player-missile 1 color/luminance
-COLPM2          = $D014                        ; player-missile 2 color/luminance
-COLPM3          = $D015                        ; player-missile 3 color/luminance
-COLPF0          = $D016                        ; playfield 0 color/luminance
-COLPF1          = $D017                        ; playfield 1 color/luminance
-COLPF2          = $D018                        ; playfield 2 color/luminance
-COLPF3          = $D019                        ; playfield 3 color/luminance
-COLBK           = $D01A                        ; background color/luminance
-PRIOR           = $D01B                        ; priority select
-VDELAY          = $D01C                        ; vertical delay
-GRACTL          = $D01D                        ; graphic control
-HITCLR          = $D01E                        ; collision clear
-CONSOL          = $D01F                        ; console switches and speaker control
+PAL             = $D014
+HPOSP0          = $D000
+TRIG0           = $D010
+TRIG1           = $D011
+COLPM0          = $D012
+COLPM1          = $D013
+COLPM2          = $D014
+COLPM3          = $D015
+COLPF0          = $D016
+COLPF1          = $D017
+COLPF2          = $D018
+COLPF3          = $D019
+COLBK           = $D01A
+PRIOR           = $D01B
+GRACTL          = $D01D
+CONSOL          = $D01F
 SKSTAT          = $D20F
-PORTA           = $D300                        ; port A direction register or jacks one/two
-PORTB           = $D301                        ; port B direction register or memory management
-PACTL           = $D302                        ; port A control
-PBCTL           = $D303                        ; port B control
-DMACTL          = $D400                        ; DMA control
-CHACTL          = $D401                        ; character control
-DLISTL          = $D402                        ; low display list address
-DLISTH          = $D403                        ; high display list address
-HSCROL          = $D404                        ; horizontal scroll
-VSCROL          = $D405                        ; vertical scroll
-PMBASE          = $D407                        ; player-missile base address
-CHBASE          = $D409                        ; character base address
-WSYNC           = $D40A                        ; wait for HBLANK synchronization
-NMIEN           = $D40E                        ; NMI enable
-NMIRES          = $D40F                        ; NMI interrupt reset
+WSYNC           = $D40A
+NMIEN           = $D40E
 
 
         org     $2000
@@ -84,9 +58,22 @@ L2C02   cmp     RTCLOK
         mwa     #DLI    VDSLST
         mwa     #DLIST  SDLSTL
 
+        lda     PAL
+        and     #8
+        tay
+        bne     IS_NTSC
+        ; Fixup DLI for PAL
+        lda     #$36
+        sta     DLI_COLPF2
+        lda     #$2A
+        sta     DLI_COLPF1
+        lda     #$62
+        sta     DLI_COLBK
+IS_NTSC
         ldx     #8
-SCLR    lda     COLORS, x
+SCLR    lda     COLORS, y
         sta     PCOLR0, x
+        iny
         dex
         bpl     SCLR
 
@@ -144,17 +131,23 @@ DLI     pha
         lda     #$81
         sta     WSYNC
         sta     PRIOR
-        lda     #$46
+DLI_COLPF2 = * + 1
+        lda     #$46    ; $36
         sta     COLPF2
-        lda     #$3A
+DLI_COLPF1 = * + 1
+        lda     #$3A    ; $2A
         sta     COLPF1
-        lda     #$72
+DLI_COLBK = * + 1
+        lda     #$72    ; $62
         sta     COLBK
         pla
         rti
 
 COLORS
-        ;     PM0  PM1  PM2  PM3  PF0  PF1  PF2  PF3  PBK
-        .byte $0E, $C4, $D8, $EA, $2C, $00, $0E, $54, $0E
+        ;     PBK  PF3  PF2  PF1  PF0  PM3  PM2  PM1  PM0
+        ; PAL
+        .byte $0E, $44, $0E, $00, $1C, $DA, $C8, $B4, $0E
+        ; NTSC
+        .byte      $54, $0E, $00, $2C, $EA, $D8, $C4, $0E
 
         ini     STARTUP
