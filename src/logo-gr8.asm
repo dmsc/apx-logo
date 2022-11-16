@@ -71,42 +71,6 @@ NMIRES          = $D40F                        ; NMI interrupt reset
 
         org     $2000
 
-DLIST   .byte   $70,$70,$70,$70,$60,$4F
-        .word   SCREEN
-        :60 .byte 15
-        .byte   $50
-        :11 .byte 15
-        .byte   $D0
-        .byte   15, 15
-        :29     dta $4F, a(REPLINE), $0F
-        dta $4F, a(REPLINE)
-        .byte   $41
-        .word   DLIST
-
-SCREEN
-        ins     'scr8.bin',+1248,1952
-        ins     'scr8.bin',+3392,352
-REPLINE
-        ins     'scr8.bin',+3936,64
-
-
-DLI     sta     save_a
-        stx     save_x
-        sty     save_y
-        lda     #$81
-        ldx     #$46
-        ldy     #$72
-        sta     WSYNC
-        sta     PRIOR
-        lda     #$3A
-        sta     COLPF1
-        stx     COLPF2
-        sty     COLBK
-        lda     save_a
-        ldx     save_x
-        ldy     save_y
-        rti
-
 STARTUP lda     RTCLOK
 L2C02   cmp     RTCLOK
         beq     L2C02
@@ -154,6 +118,42 @@ L2C46   sta     HPOSP0,x
         lda     #$40
         sta     NMIEN
         rts
+
+DLIST   .byte   $70,$70,$70,$70,$60,$4F
+        .word   SCREEN
+        :60 .byte 15
+        .byte   $50
+        :11 .byte 15
+        .byte   $D0
+        .byte   15, 15
+        :29     dta $4F, a(REPLINE), $0F
+        dta $4F, a(REPLINE)
+        .byte   $41
+        .word   DLIST
+
+SCREEN
+        ins     'scr8.bin',+1248,1952
+        ins     'scr8.bin',+3392,352
+REPLINE
+        ins     'scr8.bin',+3936,64
+
+
+DLI     sta     save_a
+        stx     save_x
+        sty     save_y
+        lda     #$81
+        ldx     #$46
+        ldy     #$72
+        sta     WSYNC
+        sta     PRIOR
+        lda     #$3A
+        sta     COLPF1
+        stx     COLPF2
+        sty     COLBK
+        lda     save_a
+        ldx     save_x
+        ldy     save_y
+        rti
 
 COLORS
         ;     PM0  PM1  PM2  PM3  PF0  PF1  PF2  PF3  PBK

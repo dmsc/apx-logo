@@ -12,7 +12,7 @@ out_addr = $2000
 
 start:
         jsr     full_decomp
-        jmp     $2a31
+        jmp     $2000
 
 comp_data
         ins  "logo-gr8.zx02"
