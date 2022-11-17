@@ -5,11 +5,14 @@ BUILD=build
 
 # Out build tools
 MADS=mads
-ACOM=ataricom
 ZX02=zx02
 
+# Programs to build:
+PROGS=\
+      logo-comp.xex\
+      logo-gr8.xex\
 
-all: $(BUILD)/logo-comp.xex
+all: $(PROGS:%=$(BUILD)/%)
 
 
 $(BUILD):
@@ -18,11 +21,12 @@ $(BUILD):
 $(BUILD)/%.xex: src/%.asm | $(BUILD)
 	$(MADS) -i:$(BUILD) -o:$@ $<
 
-$(BUILD)/%.bin: $(BUILD)/%.xex | $(BUILD)
-	$(ACOM) -b 1 -n $< $@
+$(BUILD)/%.bin: src/%.asm | $(BUILD)
+	$(MADS) -i:$(BUILD) -d:BINARY=1 -o:$@ $<
 
 $(BUILD)/%.zx02: $(BUILD)/%.bin | $(BUILD)
 	$(ZX02) -f $< $@
 
 $(BUILD)/logo-comp.xex: src/zx02-optim.asm $(BUILD)/logo-gr8.zx02
 $(BUILD)/logo-gr8.xex: src/scr8.bin
+$(BUILD)/logo-gr8.bin: src/scr8.bin

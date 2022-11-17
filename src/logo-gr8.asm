@@ -44,6 +44,9 @@ SKSTAT          = $D20F
 WSYNC           = $D40A
 NMIEN           = $D40E
 
+        ift .def BINARY
+                opt h-
+        eif
 
         org     $2000
 
@@ -150,4 +153,7 @@ COLORS
         ; NTSC
         .byte      $54, $0E, $00, $2C, $EA, $D8, $C4, $0E
 
-        ini     STARTUP
+        ift .not .def BINARY
+                ini     STARTUP
+        eif
+
