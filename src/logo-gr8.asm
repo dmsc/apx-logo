@@ -67,7 +67,7 @@ L2C02   cmp     RTCLOK
         sta     DLI_COLPF2
         lda     #$2A
         sta     DLI_COLPF1
-        lda     #$62
+        lda     #$60
         sta     DLI_COLBK
 IS_NTSC
         ldx     #8
