@@ -149,7 +149,7 @@ DLI_COLBK = * + 1
 COLORS
         ;     PBK  PF3  PF2  PF1  PF0  PM3  PM2  PM1  PM0
         ; PAL
-        .byte $0E, $44, $0E, $00, $1C, $DA, $C8, $B4, $0E
+        .byte $0E, $44, $0E, $00, $1C, $DA, $C6, $B2, $0E
         ; NTSC
         .byte      $54, $0E, $00, $2C, $EA, $D8, $C4, $0E
 
